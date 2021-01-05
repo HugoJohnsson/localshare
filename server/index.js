@@ -40,7 +40,18 @@ function addToGroup(peer) {
 }
 
 function leaveGroup(peer) {
+    if (!groups[peer.ip] || !groups[peer.ip][peer.id]) return;
+
+    // Delete peer from group
     delete groups[peer.ip][peer.id];
+
+    // Delete the group if it's empty
+    if (!Object.keys(groups[peer.ip]).length) {
+        delete groups[peer.ip];
+    }
+
+    // Terminate the peer socket
+    peer.socket.terminate();
 }
 
 /**
