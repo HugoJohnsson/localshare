@@ -15,9 +15,12 @@ server.on('connection', (socket, req) => handleConnection(new Peer(socket, req.c
  * @param {Peer} peer 
  */
 function handleConnection(peer) {
-    addToRoom(peer);
+    addToGroup(peer);
 
-    // Send a message with all available peers
+    peer.socket.on('message', (message) => handleMessage(peer, message));
+    peer.socket.on('close', () => handleDisconnect(peer));
+
+    // Send a message to the joined peer with all available peers
     sendMessage(peer, new Message(
         MessageType.AVAILABLE_PEERS,
         getAvailablePeers(peer)
@@ -28,12 +31,34 @@ function handleConnection(peer) {
  * 
  * @param {Peer} peer 
  */
-function addToRoom(peer) {
+function addToGroup(peer) {
     if (!groups[peer.ip]) { // Create the room if one doesn't exist
         groups[peer.ip] = {};
     }
 
     groups[peer.ip][peer.id] = peer;
+}
+
+function leaveGroup(peer) {
+    delete groups[peer.ip][peer.id];
+}
+
+/**
+ * 
+ * @param {JSON} message 
+ */
+function handleMessage(peer, message) {
+    message = JSON.parse(message);
+
+    switch(message.type) {
+        case MessageType.CLIENT_DISCONNECTED:
+            handleDisconnect(peer);
+            break;
+    }
+}
+
+function handleDisconnect(peer) {
+    leaveGroup(peer);
 }
 
 /**
@@ -50,10 +75,10 @@ function getAvailablePeers(peer) {
     
     // Get all other peers in the group with the same IP address
     for (const peerId in groups[peer.ip]) {
-        const peer = groups[peer.ip][peerId];
+        const otherPeer = groups[peer.ip][peerId];
 
         availablePeers.push({
-            id: peer.id,
+            id: otherPeer.id,
         })
     }
 

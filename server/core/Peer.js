@@ -13,4 +13,4 @@ class Peer {
     }
 }
 
-module.export = Peer;
+module.exports = Peer;

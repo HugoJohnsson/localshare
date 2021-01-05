@@ -2,8 +2,8 @@
     Represents a message that will be sent over
     the websocket connections.
 */
-class Message {
-    constructor(type, message = null) {
+export default class Message {
+    constructor(type, message) {
         this.type = type;
         this.message = message;
     }
@@ -15,5 +15,3 @@ class Message {
         });
     }
 }
-
-module.exports = Message;
