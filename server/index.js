@@ -90,6 +90,7 @@ function getAvailablePeers(peer) {
 
         availablePeers.push({
             id: otherPeer.id,
+            name: otherPeer.name
         })
     }
 

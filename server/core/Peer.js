@@ -1,3 +1,5 @@
+const Moniker = require('moniker');
+
 /*
     Represents one peer connected to the signaling server.
 
@@ -10,6 +12,7 @@ class Peer {
         this._ip = ip;
 
         this.id = Math.floor(Math.random() * 10000); // Temporary solution to unique id
+        this.name = Moniker.choose();
     }
 }
 
