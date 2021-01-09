@@ -28,6 +28,12 @@ function handleConnection(peer) {
         MessageType.AVAILABLE_PEERS,
         getAvailablePeers(peer).map(otherPeer => otherPeer.serialize())
     ));
+
+    // Send a message to the joined peer with it's personal name
+    sendMessage(peer, new Message(
+        MessageType.PERSONAL_NAME,
+        peer.name
+    ));
 }
 
 /**

@@ -18,7 +18,7 @@ function messageHandler(message) {
             handleAvailablePeersMessage(message.message);
             break;
         case MessageType.PERSONAL_NAME:
-            console.log('your personal name is: ' + message.message)
+            handlePersonalNameMessage(message.message);
             break;
         case MessageType.PEER_JOINED:
             handlePeerJoinedMessage(message.message);
@@ -39,6 +39,14 @@ function handlePeerLeftMessage(peer) {
     }
 }
 
+function handlePersonalNameMessage(name) {
+    setPersonalName(name);
+}
+
+function setPersonalName(name) {
+    document.getElementById('personal-name').innerHTML = `You will show up as <b>${name}</b> on other devices`;    
+}
+
 function handleAvailablePeersMessage(availablePeers) {
     for (const peer of availablePeers) {
         availablePeersEl.append(makeAvailablePeerElement(peer.id, peer.name));
@@ -46,10 +54,21 @@ function handleAvailablePeersMessage(availablePeers) {
 }
 
 function makeAvailablePeerElement(id, name) {
-    let el = document.createElement('p');
+    let el = document.createElement('div');
+    el.classList.add('available-peers__peer');
+
+    let circleEl = document.createElement('div');
+    circleEl.classList.add('available-peers__circle');
+    circleEl.innerHTML = name.charAt(0).toUpperCase();
+    el.append(circleEl);
+
+    let nameEl = document.createElement('div');
+    nameEl.classList.add('available-peers__name');
+    nameEl.innerHTML = name;
+    el.append(nameEl);
+
     el.peerId = id;
     el.name = name;
-    el.textContent = name;
 
     return el;
 }

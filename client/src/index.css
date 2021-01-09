@@ -1,0 +1,58 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    height: 100vh;
+    color: #333;
+}
+
+#app {
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.available-peers__heading {
+    text-align: center;
+    margin-bottom: 0.7rem;
+    font-weight: 300;
+}
+
+.available-peers__personal-name {
+    text-align: center;
+    margin-bottom: 2.3rem;
+    font-size: 0.8rem;
+}
+
+.available-peers__peers {
+    display: flex;
+    justify-content: center;
+}
+
+.available-peers__peer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    margin: 0 1rem;
+}
+
+.available-peers__circle {
+    background-color: blue;
+    color: #fff;
+    width: 70px;
+    height: 70px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.available-peers__name {
+    margin-top: 0.5rem;
+}

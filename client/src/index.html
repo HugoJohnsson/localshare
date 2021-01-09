@@ -3,11 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Localshare</title>
+    <link rel="stylesheet" href="index.css">
 </head>
 <body>
-    <div id="available-peers">
-        
+    <div id="app">
+        <div class="main">
+            <div class="available-peers">
+                <h3 class="available-peers__heading">Click on a device to send files</h3>
+                <p id="personal-name" class="available-peers__personal-name"></p>
+
+                <div id="available-peers" class="available-peers__peers"></div>
+            </div>
+        </div>
     </div>
 
     <script src="index.js"></script>
