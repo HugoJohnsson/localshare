@@ -1,4 +1,5 @@
 const WebSocket = require('ws');
+const GroupManager = require('./core/GroupManager.js');
 const Peer = require('./core/Peer.js');
 const Message = require('./core/Message.js');
 const MessageType = require('./core/model/MessageType.js');
@@ -6,7 +7,7 @@ const MessageType = require('./core/model/MessageType.js');
 const PORT = process.env.PORT || 8080;
 const server = new WebSocket.Server({ port: PORT });
 
-let groups = {}; // Holds all "groups", one group is created for every unique IP address
+const groupManager = new GroupManager();
 
 server.on('connection', (socket, req) => handleConnection(new Peer(socket, req.connection.remoteAddress)));
 
@@ -15,7 +16,7 @@ server.on('connection', (socket, req) => handleConnection(new Peer(socket, req.c
  * @param {Peer} peer 
  */
 function handleConnection(peer) {
-    addToGroup(peer);
+    groupManager.addToGroup(peer);
 
     peer.socket.on('message', (message) => handleMessage(peer, message));
     peer.socket.on('close', () => handleDisconnect(peer));
@@ -27,37 +28,6 @@ function handleConnection(peer) {
         MessageType.AVAILABLE_PEERS,
         getAvailablePeers(peer).map(otherPeer => otherPeer.serialize())
     ));
-}
-
-/**
- * 
- * @param {Peer} peer 
- */
-function addToGroup(peer) {
-    if (!groups[peer.ip]) { // Create the room if one doesn't exist
-        groups[peer.ip] = {};
-    }
-
-    groups[peer.ip][peer.id] = peer;
-}
-
-/**
- * 
- * @param {Peer} peer 
- */
-function leaveGroup(peer) {
-    if (!groups[peer.ip] || !groups[peer.ip][peer.id]) return;
-
-    // Delete peer from group
-    delete groups[peer.ip][peer.id];
-
-    // Delete the group if it's empty
-    if (!Object.keys(groups[peer.ip]).length) {
-        delete groups[peer.ip];
-    }
-
-    // Terminate the peer socket
-    peer.socket.terminate();
 }
 
 /**
@@ -79,7 +49,7 @@ function handleMessage(peer, message) {
  * @param {Peer} peer 
  */
 function handleDisconnect(peer) {
-    leaveGroup(peer);
+    groupManager.leaveGroup(peer);
 
     sendPeerLeftMessage(peer);
 }
@@ -102,8 +72,9 @@ function getAvailablePeers(peer) {
     let availablePeers = [];
     
     // Get all other peers in the group with the same IP address
-    for (const peerId in groups[peer.ip]) {
-        const otherPeer = groups[peer.ip][peerId];
+    const group = groupManager.getGroupByIp(peer.ip);
+    for (const peerId in group) {
+        const otherPeer = group[peerId];
 
         if (peerId != peer.id) availablePeers.push(otherPeer)
     }
