@@ -9,10 +9,17 @@ const Moniker = require('moniker');
 class Peer {
     constructor(socket, ip) {
         this.socket = socket;
-        this._ip = ip;
+        this.ip = ip;
 
         this.id = Math.floor(Math.random() * 10000); // Temporary solution to unique id
         this.name = Moniker.choose();
+    }
+
+    serialize() {
+        return {
+            id: this.id,
+            name: this.name
+        }
     }
 }
 

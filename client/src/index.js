@@ -3,6 +3,8 @@ import MessageType from './core/model/MessageType';
 
 const WSConnection = new WebSocketConnection(messageHandler);
 
+const availablePeersEl = document.getElementById('available-peers');
+
 /**
  * The main websocket message handler.
  * 
@@ -18,20 +20,34 @@ function messageHandler(message) {
         case MessageType.PERSONAL_NAME:
             console.log('your personal name is: ' + message.message)
             break;
+        case MessageType.PEER_JOINED:
+            handlePeerJoinedMessage(message.message);
+            break;
+        case MessageType.PEER_LEFT:
+            handlePeerLeftMessage(message.message);
+            break;
+    }
+}
+
+function handlePeerJoinedMessage(peer) {
+    availablePeersEl.appendChild(makeAvailablePeerElement(peer.id, peer.name));
+}
+
+function handlePeerLeftMessage(peer) {
+    for (const el of availablePeersEl.childNodes) {
+        if (el.peerId === peer.id) el.remove();
     }
 }
 
 function handleAvailablePeersMessage(availablePeers) {
-    const availablePeersEl = document.getElementById('available-peers');
-
     for (const peer of availablePeers) {
-        availablePeersEl.appendChild(makeAvailablePeerElement(peer.id, peer.name));
+        availablePeersEl.append(makeAvailablePeerElement(peer.id, peer.name));
     }
 }
 
 function makeAvailablePeerElement(id, name) {
     let el = document.createElement('p');
-    el.id = id;
+    el.peerId = id;
     el.name = name;
     el.textContent = name;
 

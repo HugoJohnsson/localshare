@@ -20,11 +20,13 @@ function handleConnection(peer) {
     peer.socket.on('message', (message) => handleMessage(peer, message));
     peer.socket.on('close', () => handleDisconnect(peer));
 
+    sendPeerJoinedMessage(peer);
+
     // Send a message to the joined peer with all available peers
     sendMessage(peer, new Message(
         MessageType.AVAILABLE_PEERS,
-        getAvailablePeers(peer)
-    ))
+        getAvailablePeers(peer).map(otherPeer => otherPeer.serialize())
+    ));
 }
 
 /**
@@ -39,6 +41,10 @@ function addToGroup(peer) {
     groups[peer.ip][peer.id] = peer;
 }
 
+/**
+ * 
+ * @param {Peer} peer 
+ */
 function leaveGroup(peer) {
     if (!groups[peer.ip] || !groups[peer.ip][peer.id]) return;
 
@@ -68,8 +74,14 @@ function handleMessage(peer, message) {
     }
 }
 
+/**
+ * 
+ * @param {Peer} peer 
+ */
 function handleDisconnect(peer) {
     leaveGroup(peer);
+
+    sendPeerLeftMessage(peer);
 }
 
 /**
@@ -81,6 +93,11 @@ function sendMessage(peer, message) {
     peer.socket.send(message.toJSON());
 }
 
+/**
+ * 
+ * @param {Peer} peer 
+ * @return {Peer[]}
+ */
 function getAvailablePeers(peer) {
     let availablePeers = [];
     
@@ -88,13 +105,34 @@ function getAvailablePeers(peer) {
     for (const peerId in groups[peer.ip]) {
         const otherPeer = groups[peer.ip][peerId];
 
-        availablePeers.push({
-            id: otherPeer.id,
-            name: otherPeer.name
-        })
+        if (peerId != peer.id) availablePeers.push(otherPeer)
     }
 
     return availablePeers;
+}
+
+/**
+ * 
+ * @param {Peer} peer 
+ */
+function sendPeerJoinedMessage(peer) {
+    const otherPeers = getAvailablePeers(peer);
+
+    for (const otherPeer of otherPeers) {
+        sendMessage(otherPeer, new Message(MessageType.PEER_JOINED, peer.serialize()))
+    }
+}
+
+/**
+ * 
+ * @param {Peer} peer 
+ */
+function sendPeerLeftMessage(peer) {
+    const otherPeers = getAvailablePeers(peer);
+
+    for (const otherPeer of otherPeers) {
+        sendMessage(otherPeer, new Message(MessageType.PEER_LEFT, peer.serialize()))
+    }
 }
 
 console.log(`Server is running on port: ${PORT}`);
