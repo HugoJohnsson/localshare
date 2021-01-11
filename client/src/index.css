@@ -43,7 +43,6 @@ body {
 }
 
 .available-peers__circle {
-    background-color: blue;
     color: #fff;
     width: 70px;
     height: 70px;
