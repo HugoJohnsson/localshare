@@ -25,7 +25,7 @@ class App {
 
         await peerConnection.setLocalDescription(offer);
 
-        this.wsConnection.send(new Message(MessageType.SIGNAL_PEER, { peerId }));
+        this.wsConnection.send(new Message(MessageType.SIGNAL_PEER, { peerId, offer }));
     }
 
     /**
@@ -49,6 +49,9 @@ class App {
             case MessageType.PEER_LEFT:
                 this.handlePeerLeftMessage(message.message);
                 break;
+            case MessageType.SIGNAL_PEER:
+                this.handleSignalPeerMessage(message.message);
+                break;
         }
     }
 
@@ -66,6 +69,10 @@ class App {
      */
     handlePeerLeftMessage = (peer) => {
         this.UI.removePeer(peer);
+    }
+
+    handleSignalPeerMessage = (data) => {
+        console.log(data);
     }
     
     /**

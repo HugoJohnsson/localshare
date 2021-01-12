@@ -53,8 +53,18 @@ function handleMessage(peer, message) {
     }
 }
 
-function handleSignalPeer(peer, data) {
-    console.log(data);
+/**
+ * 
+ * @param {Peer} caller 
+ * @param {*} data 
+ */
+function handleSignalPeer(caller, data) {
+    const receivingPeerId = data.message.peerId;
+    const offer = data.message.offer;
+
+    const receivingPeer = groupManager.getGroupByIp(caller.ip)[receivingPeerId];
+
+   sendMessage(receivingPeer, new Message(MessageType.SIGNAL_PEER, { callerId: caller.id, offer }))
 }
 
 /**
