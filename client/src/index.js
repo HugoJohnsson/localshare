@@ -52,6 +52,9 @@ class App {
             case MessageType.SIGNAL_PEER:
                 this.handleSignalPeerMessage(message.message);
                 break;
+            case MessageType.ANSWER_SIGNAL_PEER:
+                this.handleAnswerSignalPeerMessage(message.message);
+                break;
         }
     }
 
@@ -71,8 +74,26 @@ class App {
         this.UI.removePeer(peer);
     }
 
-    handleSignalPeerMessage = (data) => {
-        console.log(data);
+    handleSignalPeerMessage = async (data) => {
+        const { callerId, offer } = data;
+
+        const peerConnection = new RTCPeerConnection({
+            iceServers: [{ urls: 'stun:stun.test.com:19000' }],
+        });
+
+        await peerConnection.setRemoteDescription(offer);
+
+        const answer = await peerConnection.createAnswer();
+
+        await peerConnection.setLocalDescription(answer);
+
+        this.wsConnection.send(new Message(MessageType.ANSWER_SIGNAL_PEER, { callerId, answer }));
+    }
+
+    handleAnswerSignalPeerMessage = (data) => {
+        const { respondingId, answer } = data;
+
+        //await peerConnection.setRemoteDescription(answer);
     }
     
     /**

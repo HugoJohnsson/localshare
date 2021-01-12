@@ -4,5 +4,6 @@ export default {
     PEER_JOINED: 'peer-joined',
     PEER_LEFT: 'peer-left',
     SIGNAL_PEER: 'signal-peer',
+    ANSWER_SIGNAL_PEER: 'answer-signal-peer',
     CLIENT_DISCONNECTED: 'client-disconnected'
 }

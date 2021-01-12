@@ -47,6 +47,9 @@ function handleMessage(peer, message) {
         case MessageType.SIGNAL_PEER:
             handleSignalPeer(peer, message);
             break;
+        case MessageType.ANSWER_SIGNAL_PEER:
+            handleAnswerSignalPeer(peer, message);
+            break;
         case MessageType.CLIENT_DISCONNECTED:
             handleDisconnect(peer);
             break;
@@ -65,6 +68,14 @@ function handleSignalPeer(caller, data) {
     const receivingPeer = groupManager.getGroupByIp(caller.ip)[receivingPeerId];
 
    sendMessage(receivingPeer, new Message(MessageType.SIGNAL_PEER, { callerId: caller.id, offer }))
+}
+
+function handleAnswerSignalPeer(peer, data) {
+    const { callerId, answer} = data.message;
+
+    const callingPeer = groupManager.getGroupByIp(peer.ip)[callerId];
+
+   sendMessage(callingPeer, new Message(MessageType.ANSWER_SIGNAL_PEER, { respondingId: peer.id, answer }));
 }
 
 /**
