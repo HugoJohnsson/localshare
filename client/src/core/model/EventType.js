@@ -1,3 +1,5 @@
 export default {
-    SIGNAL_PEER: 'signal-peer'
+    CALL: 'call',
+    RECEIVED_CALL: 'received-call',
+    ANSWERED:  'answered'
 }

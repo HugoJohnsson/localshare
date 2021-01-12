@@ -44,11 +44,11 @@ function handleMessage(peer, message) {
     message = JSON.parse(message);
 
     switch(message.type) {
-        case MessageType.SIGNAL_PEER:
-            handleSignalPeer(peer, message);
+        case MessageType.CALL:
+            handleCall(peer, message);
             break;
-        case MessageType.ANSWER_SIGNAL_PEER:
-            handleAnswerSignalPeer(peer, message);
+        case MessageType.ANSWER:
+            handleAnswer(peer, message);
             break;
         case MessageType.CLIENT_DISCONNECTED:
             handleDisconnect(peer);
@@ -61,21 +61,23 @@ function handleMessage(peer, message) {
  * @param {Peer} caller 
  * @param {*} data 
  */
-function handleSignalPeer(caller, data) {
-    const receivingPeerId = data.message.peerId;
-    const offer = data.message.offer;
-
+function handleCall(caller, data) {
+    const { receivingPeerId, offer } = data.message;
     const receivingPeer = groupManager.getGroupByIp(caller.ip)[receivingPeerId];
-
-   sendMessage(receivingPeer, new Message(MessageType.SIGNAL_PEER, { callerId: caller.id, offer }))
+    
+    sendMessage(receivingPeer, new Message(MessageType.CALL, { callerPeerId: caller.id, offer }))
 }
 
-function handleAnswerSignalPeer(peer, data) {
-    const { callerId, answer} = data.message;
-
-    const callingPeer = groupManager.getGroupByIp(peer.ip)[callerId];
-
-   sendMessage(callingPeer, new Message(MessageType.ANSWER_SIGNAL_PEER, { respondingId: peer.id, answer }));
+/**
+ * 
+ * @param {Peer} peer 
+ * @param {*} data 
+ */
+function handleAnswer(peer, data) {
+    const { callerPeerId, answer} = data.message;
+    const callingPeer = groupManager.getGroupByIp(peer.ip)[callerPeerId];
+    
+    sendMessage(callingPeer, new Message(MessageType.ANSWERED, { answer }));
 }
 
 /**

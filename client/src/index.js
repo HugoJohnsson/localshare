@@ -1,31 +1,15 @@
 import WebSocketConnection from './core/WebsocketConnection';
-import Message from './core/Message';
 import MessageType from './core/model/MessageType';
 import UI from './core/UI';
 import Events from './core/Events';
 import EventType from './core/model/EventType';
+import ConnectionManager from './core/ConnectionManager';
 
 class App {
     constructor() {
         this.wsConnection = new WebSocketConnection(this.messageHandler);
         this.UI = new UI();
-
-        // Event listeners
-        Events.listen(EventType.SIGNAL_PEER, (data) => this.onSignalPeer(data));
-    }
-
-    onSignalPeer = async (data) => {
-       const { peerId } = data.detail;
-
-        const peerConnection = new RTCPeerConnection({
-            iceServers: [{ urls: 'stun:stun.test.com:19000' }],
-        });
-
-        const offer = await peerConnection.createOffer();
-
-        await peerConnection.setLocalDescription(offer);
-
-        this.wsConnection.send(new Message(MessageType.SIGNAL_PEER, { peerId, offer }));
+        this.connectionManager = new ConnectionManager(this.wsConnection);
     }
 
     /**
@@ -49,11 +33,11 @@ class App {
             case MessageType.PEER_LEFT:
                 this.handlePeerLeftMessage(message.message);
                 break;
-            case MessageType.SIGNAL_PEER:
-                this.handleSignalPeerMessage(message.message);
+            case MessageType.CALL:
+                this.handleCallMessage(message.message);
                 break;
-            case MessageType.ANSWER_SIGNAL_PEER:
-                this.handleAnswerSignalPeerMessage(message.message);
+            case MessageType.ANSWERED:
+                this.handleAnsweredMessage(message.message);
                 break;
         }
     }
@@ -74,26 +58,26 @@ class App {
         this.UI.removePeer(peer);
     }
 
-    handleSignalPeerMessage = async (data) => {
-        const { callerId, offer } = data;
+    /**
+     * Handler for when another peer want to connect.
+     * Will setup an RTCPeerConnection.
+     * 
+     * @param {*} data 
+     */
+    handleCallMessage = async (data) => {
+        const { callerPeerId, offer } = data;
 
-        const peerConnection = new RTCPeerConnection({
-            iceServers: [{ urls: 'stun:stun.test.com:19000' }],
-        });
-
-        await peerConnection.setRemoteDescription(offer);
-
-        const answer = await peerConnection.createAnswer();
-
-        await peerConnection.setLocalDescription(answer);
-
-        this.wsConnection.send(new Message(MessageType.ANSWER_SIGNAL_PEER, { callerId, answer }));
+        Events.trigger(EventType.RECEIVED_CALL, { callerPeerId, offer });
     }
 
-    handleAnswerSignalPeerMessage = (data) => {
-        const { respondingId, answer } = data;
-
-        //await peerConnection.setRemoteDescription(answer);
+    /**
+     * Handler for when you have called another peer
+     * and they have answered.
+     * 
+     * @param {*} data 
+     */
+    handleAnsweredMessage = async (data) => {
+        Events.trigger(EventType.ANSWERED, { answer: data.answer });
     }
     
     /**

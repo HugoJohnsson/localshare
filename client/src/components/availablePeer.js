@@ -21,7 +21,7 @@ export default function makeAvailablePeerElement(peerId, name) {
     el.name = name;
 
     // Event listeners
-    el.addEventListener('click', () => Events.trigger(EventType.SIGNAL_PEER, { peerId }));
+    el.addEventListener('click', () => Events.trigger(EventType.CALL, { receivingPeerId: peerId })); // Trigger CALL event when you click on a peer because this means you want to connect to the peer
 
     return el;
 }
