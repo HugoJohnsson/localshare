@@ -3,5 +3,6 @@ module.exports = {
     PERSONAL_NAME: 'personal-name',
     PEER_JOINED: 'peer-joined',
     PEER_LEFT: 'peer-left',
+    SIGNAL_PEER: 'signal-peer',
     CLIENT_DISCONNECTED: 'client-disconnected'
 }

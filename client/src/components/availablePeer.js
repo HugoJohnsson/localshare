@@ -1,6 +1,8 @@
 import randomColor from '../core/randomColor';
+import Events from '../core/Events';
+import EventType from '../core/model/EventType';
 
-export default function makeAvailablePeerElement(id, name) {
+export default function makeAvailablePeerElement(peerId, name) {
     let el = document.createElement('div');
     el.classList.add('available-peers__peer');
 
@@ -15,8 +17,11 @@ export default function makeAvailablePeerElement(id, name) {
     nameEl.innerHTML = name;
     el.append(nameEl);
 
-    el.peerId = id;
+    el.peerId = peerId;
     el.name = name;
+
+    // Event listeners
+    el.addEventListener('click', () => Events.trigger(EventType.SIGNAL_PEER, { peerId }));
 
     return el;
 }

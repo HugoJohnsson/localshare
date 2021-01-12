@@ -44,10 +44,17 @@ function handleMessage(peer, message) {
     message = JSON.parse(message);
 
     switch(message.type) {
+        case MessageType.SIGNAL_PEER:
+            handleSignalPeer(peer, message);
+            break;
         case MessageType.CLIENT_DISCONNECTED:
             handleDisconnect(peer);
             break;
     }
+}
+
+function handleSignalPeer(peer, data) {
+    console.log(data);
 }
 
 /**
