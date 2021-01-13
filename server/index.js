@@ -3,6 +3,7 @@ const GroupManager = require('./core/GroupManager.js');
 const Peer = require('./core/Peer.js');
 const Message = require('./core/Message.js');
 const MessageType = require('./core/model/MessageType.js');
+
 class SignalingServer {
 
     constructor(port) {

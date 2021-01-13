@@ -7,6 +7,7 @@ class ConnectionManager {
     constructor(wsConnection) {
         this.wsConnection = wsConnection;
         this.peerConnection = null;
+        this.dataChannel = null;
 
         Events.listen(EventType.CALL, (e) => this.onCallPeer(e)); // Listen for when the user wants to send files to a peer
         Events.listen(EventType.RECEIVED_CALL, (e) => this.onReceivedCall(e));
@@ -28,7 +29,9 @@ class ConnectionManager {
             iceCandidatePoolSize: 10
         });
 
-        this.peerConnection.createDataChannel("sendChannel");
+        this.dataChannel = this.peerConnection.createDataChannel("sendChannel");
+
+        this.dataChannel.onopen = () => this.dataChannel.send("hello world");
 
         const offer = await this.peerConnection.createOffer({offerToReceiveVideo: true});
 
@@ -54,6 +57,14 @@ class ConnectionManager {
             sdpSemantics: 'unified-plan',
             iceServers: [{urls: 'stun:stun.l.google.com:19302'}],
             iceCandidatePoolSize: 10
+        });
+
+        this.peerConnection.addEventListener('datachannel', (dataChannelEvent) => {
+            this.dataChannel = dataChannelEvent.channel;
+
+            this.dataChannel.addEventListener('message', (messageEvent) => {
+                console.log(messageEvent.data);
+            })
         });
 
         await this.peerConnection.setRemoteDescription(e.detail.offer);
