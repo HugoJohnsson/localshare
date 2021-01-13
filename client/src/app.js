@@ -50,7 +50,7 @@ export default class App {
      * @param {*} message 
      */
     handlePeerJoinedMessage = (message) => {
-        this.UI.newPeer(message.data);
+        Events.trigger(EventType.PEER_JOINED, { peer: message.data.peer });
     }
     
     /**
@@ -58,7 +58,7 @@ export default class App {
      * @param {*} message 
      */
     handlePeerLeftMessage = (message) => {
-        this.UI.removePeer(message.data);
+        Events.trigger(EventType.PEER_LEFT, { peer: message.data.peer });
     }
 
     /**
@@ -94,7 +94,7 @@ export default class App {
      * @param {*} message 
      */
     handlePersonalNameMessage = (message) => {
-        this.UI.setPersonalName(message.data.name);
+        Events.trigger(EventType.RECEIVED_PERSONAL_NAME, { name: message.data.name });
     }
     
     /**
@@ -102,8 +102,6 @@ export default class App {
      * @param {*} message 
      */
     handleAvailablePeersMessage = (message) => {
-        for (const peer of message.data.availablePeers) {
-            this.UI.newPeer(peer);
-        }
+        Events.trigger(EventType.RECEIVED_AVAILABLE_PEERS, { availablePeers: message.data.availablePeers });
     }
 }

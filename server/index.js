@@ -118,7 +118,7 @@ class SignalingServer {
         const otherPeers = this.getAvailablePeers(joinedPeer);
 
         for (const otherPeer of otherPeers) {
-            this.sendMessage(otherPeer, new Message(MessageType.PEER_JOINED, joinedPeer.serialize()).toJSON())
+            this.sendMessage(otherPeer, new Message(MessageType.PEER_JOINED, { peer: joinedPeer.serialize() }).toJSON())
         }
     }
 
@@ -132,7 +132,7 @@ class SignalingServer {
         const otherPeers = this.getAvailablePeers(leavingPeer);
 
         for (const otherPeer of otherPeers) {
-            this.sendMessage(otherPeer, new Message(MessageType.PEER_LEFT, leavingPeer.serialize()).toJSON())
+            this.sendMessage(otherPeer, new Message(MessageType.PEER_LEFT, { peer: leavingPeer.serialize() }).toJSON())
         }
     }
 }
