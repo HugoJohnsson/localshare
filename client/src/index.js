@@ -36,6 +36,9 @@ class App {
             case MessageType.CALL:
                 this.handleCallMessage(message.message);
                 break;
+            case MessageType.RECEIVED_ICE_CANDIDATE:
+                this.handleReceivedIceCandidate(message.message);
+                break;
             case MessageType.ANSWERED:
                 this.handleAnsweredMessage(message.message);
                 break;
@@ -64,7 +67,7 @@ class App {
      * 
      * @param {*} data 
      */
-    handleCallMessage = async (data) => {
+    handleCallMessage = (data) => {
         const { callerPeerId, offer } = data;
 
         Events.trigger(EventType.RECEIVED_CALL, { callerPeerId, offer });
@@ -76,8 +79,12 @@ class App {
      * 
      * @param {*} data 
      */
-    handleAnsweredMessage = async (data) => {
+    handleAnsweredMessage = (data) => {
         Events.trigger(EventType.ANSWERED, { answer: data.answer });
+    }
+
+    handleReceivedIceCandidate = (data) => {
+        Events.trigger(EventType.RECEIVED_ICE_CANDIDATE, { candidate: data.candidate });
     }
     
     /**

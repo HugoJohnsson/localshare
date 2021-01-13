@@ -11,6 +11,7 @@ class ConnectionManager {
         Events.listen(EventType.CALL, (e) => this.onCallPeer(e)); // Listen for when the user wants to send files to a peer
         Events.listen(EventType.RECEIVED_CALL, (e) => this.onReceivedCall(e));
         Events.listen(EventType.ANSWERED, (e) => this.onAnswered(e));
+        Events.listen(EventType.RECEIVED_ICE_CANDIDATE, (e) => this.onReceivedIceCandidate(e));
     }
 
     /**
@@ -21,11 +22,24 @@ class ConnectionManager {
      * @param {CustomEvent} e 
      */
     onCallPeer = async (e) => {
-        this.peerConnection = new RTCPeerConnection();
+        this.peerConnection = new RTCPeerConnection({
+            sdpSemantics: 'unified-plan', //newer implementation of WebRTC
+            iceServers: [{urls: 'stun:stun.l.google.com:19302'}],
+            iceCandidatePoolSize: 10
+        });
 
-        const offer = await this.peerConnection.createOffer();
+        this.peerConnection.createDataChannel("sendChannel");
+
+        const offer = await this.peerConnection.createOffer({offerToReceiveVideo: true});
 
         await this.peerConnection.setLocalDescription(offer);
+
+        this.peerConnection.onicecandidate = (iceGatherEvent) => this.onGatheredIceCandidate(e.detail.receivingPeerId, iceGatherEvent);
+        this.peerConnection.addEventListener('connectionstatechange', () => {
+            if (this.peerConnection.connectionState === 'connected') {
+                console.log("peers connected!");
+            }
+        });
 
         this.wsConnection.send(new Message(MessageType.CALL, { receivingPeerId: e.detail.receivingPeerId, offer }));
     }
@@ -38,7 +52,11 @@ class ConnectionManager {
     onReceivedCall = async (e) => {
         const { callerPeerId, offer } = e.detail;
 
-        this.peerConnection = new RTCPeerConnection();
+        this.peerConnection = new RTCPeerConnection({
+            sdpSemantics: 'unified-plan', //newer implementation of WebRTC
+            iceServers: [{urls: 'stun:stun.l.google.com:19302'}],
+            iceCandidatePoolSize: 10
+        });
 
         await this.peerConnection.setRemoteDescription(offer);
 
@@ -57,8 +75,25 @@ class ConnectionManager {
      */
     onAnswered = async (e) => {
         await this.peerConnection.setRemoteDescription(e.detail.answer);
+    }
 
-        console.log("connection open!");
+    /**
+     * 
+     * @param {*} receivingPeerId 
+     * @param {*} e 
+     */
+    onGatheredIceCandidate = (receivingPeerId, e) => {
+        if (e.candidate) {
+            this.wsConnection.send(new Message(MessageType.GATHERED_ICE_CANDIDATE, { receivingPeerId, candidate: e.candidate }));
+        }
+    }
+
+    /**
+     * 
+     * @param {CustomEvent} e 
+     */
+    onReceivedIceCandidate = (e) => {
+        this.peerConnection.addIceCandidate(e.detail.candidate);
     }
     
 }

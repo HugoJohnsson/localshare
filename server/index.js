@@ -50,6 +50,9 @@ function handleMessage(peer, message) {
         case MessageType.ANSWER:
             handleAnswer(peer, message);
             break;
+        case MessageType.GATHERED_ICE_CANDIDATE:
+            handleGatheredIceCandidate(peer, message);
+            break;
         case MessageType.CLIENT_DISCONNECTED:
             handleDisconnect(peer);
             break;
@@ -59,10 +62,10 @@ function handleMessage(peer, message) {
 /**
  * 
  * @param {Peer} caller 
- * @param {*} data 
+ * @param {*} message 
  */
-function handleCall(caller, data) {
-    const { receivingPeerId, offer } = data.message;
+function handleCall(caller, message) {
+    const { receivingPeerId, offer } = message.message;
     const receivingPeer = groupManager.getGroupByIp(caller.ip)[receivingPeerId];
     
     sendMessage(receivingPeer, new Message(MessageType.CALL, { callerPeerId: caller.id, offer }))
@@ -71,13 +74,26 @@ function handleCall(caller, data) {
 /**
  * 
  * @param {Peer} peer 
- * @param {*} data 
+ * @param {*} message 
  */
-function handleAnswer(peer, data) {
-    const { callerPeerId, answer} = data.message;
+function handleAnswer(peer, message) {
+    const { callerPeerId, answer} = message.message;
     const callingPeer = groupManager.getGroupByIp(peer.ip)[callerPeerId];
     
     sendMessage(callingPeer, new Message(MessageType.ANSWERED, { answer }));
+}
+
+/**
+ * 
+ * @param {Peer} fromPeer 
+ * @param {*} message 
+ */
+function handleGatheredIceCandidate(fromPeer, message) {
+    const { receivingPeerId, candidate } = message.message;
+
+    const receivingPeer = groupManager.getGroupByIp(fromPeer.ip)[receivingPeerId];
+
+    sendMessage(receivingPeer, new Message(MessageType.RECEIVED_ICE_CANDIDATE, { candidate }));
 }
 
 /**

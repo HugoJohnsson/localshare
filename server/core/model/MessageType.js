@@ -6,5 +6,7 @@ module.exports = {
     CALL: 'call',
     ANSWER: 'answer',
     ANSWERED: 'answered',
+    GATHERED_ICE_CANDIDATE: 'gathered-ice-candidate',
+    RECEIVED_ICE_CANDIDATE: 'received-ice-candidate',
     CLIENT_DISCONNECTED: 'client-disconnected'
 }
