@@ -3,159 +3,139 @@ const GroupManager = require('./core/GroupManager.js');
 const Peer = require('./core/Peer.js');
 const Message = require('./core/Message.js');
 const MessageType = require('./core/model/MessageType.js');
+class SignalingServer {
+
+    constructor(port) {
+        this.wsServer = new WebSocket.Server({ port });
+        this.groupManager = new GroupManager();
+
+        this.wsServer.on('connection', (socket, req) => this.handleConnection(new Peer(socket, req.connection.remoteAddress)));
+
+        console.log(`Server is running on port: ${port}`);
+    }
+
+    /**
+     * 
+     * @param {Peer} peer 
+     */
+    handleConnection(peer) {
+        this.groupManager.addToGroup(peer);
+
+        peer.socket.on('message', (message) => this.handleMessage(peer, message));
+        peer.socket.on('close', () => this.handleDisconnect(peer));
+
+        this.sendPeerJoinedMessage(peer);
+
+        // Send a message to the joined peer with all available peers
+        this.sendMessage(peer, new Message(
+            MessageType.AVAILABLE_PEERS,
+            { availablePeers: this.getAvailablePeers(peer).map(otherPeer => otherPeer.serialize()) }
+        ).toJSON());
+
+        // Send a message to the joined peer with it's personal name
+        this.sendMessage(peer, new Message(
+            MessageType.PERSONAL_NAME,
+            { name: peer.name }
+        ).toJSON());
+    }
+
+    /**
+     * 
+     * @param {Peer} peer 
+     * @param {JSON} message 
+     */
+    handleMessage(peer, message) {
+        message = JSON.parse(message);
+
+        // Handle message types that needs to be handled by the server
+        // and not directly be relayed to another peer
+        switch(message.type) {
+            case MessageType.CLIENT_DISCONNECTED:
+                this.handleDisconnect(peer);
+                break;
+        }
+
+        // Relay the message to the receiving peer
+        if (message.toPeerId && this.groupManager.getGroupByIp(peer.ip)) {
+            const receivingPeer = this.groupManager.getGroupByIp(peer.ip)[message.toPeerId];
+
+            delete message.toPeerId;
+            message.sendingPeerId = peer.id;
+
+            this.sendMessage(receivingPeer, JSON.stringify(message));
+        }
+    }
+
+     /**
+     * Sends a message to the passed peer
+     * 
+     * @param {Peer} peer 
+     * @param {JSON} message 
+     */
+    sendMessage(peer, message) {
+        peer.socket.send(message);
+    }
+
+    /**
+     * If the connection to a peer is for some reason lost.
+     * 
+     * @param {Peer} peer 
+     */
+    handleDisconnect(peer) {
+        this.groupManager.leaveGroup(peer);
+
+        this.sendPeerLeftMessage(peer);
+    }
+
+    /**
+     * Gets all available peers for a peer (all peers in the same group)
+     * 
+     * @param {Peer} peer 
+     * @return {Peer[]}
+     */
+    getAvailablePeers(peer) {
+        let availablePeers = [];
+        
+        // Get all other peers in the group with the same IP address
+        const group = this.groupManager.getGroupByIp(peer.ip);
+        for (const peerId in group) {
+            const otherPeer = group[peerId];
+
+            if (peerId != peer.id) availablePeers.push(otherPeer)
+        }
+
+        return availablePeers;
+    }
+
+    /**
+     * Sends a message with the type PEER_JOINED to everyone
+     * in the joined peer's group.
+     * 
+     * @param {Peer} joinedPeer 
+     */
+    sendPeerJoinedMessage(joinedPeer) {
+        const otherPeers = this.getAvailablePeers(joinedPeer);
+
+        for (const otherPeer of otherPeers) {
+            this.sendMessage(otherPeer, new Message(MessageType.PEER_JOINED, joinedPeer.serialize()).toJSON())
+        }
+    }
+
+    /**
+     * Sends a message with the type PEER_LEFT to everyone
+     * in the leaving peer's group.
+     * 
+     * @param {Peer} leavingPeer
+     */
+    sendPeerLeftMessage(leavingPeer) {
+        const otherPeers = this.getAvailablePeers(leavingPeer);
+
+        for (const otherPeer of otherPeers) {
+            this.sendMessage(otherPeer, new Message(MessageType.PEER_LEFT, leavingPeer.serialize()).toJSON())
+        }
+    }
+}
 
 const PORT = process.env.PORT || 8080;
-const server = new WebSocket.Server({ port: PORT });
 
-const groupManager = new GroupManager();
-
-server.on('connection', (socket, req) => handleConnection(new Peer(socket, req.connection.remoteAddress)));
-
-/**
- * 
- * @param {Peer} peer 
- */
-function handleConnection(peer) {
-    groupManager.addToGroup(peer);
-
-    peer.socket.on('message', (message) => handleMessage(peer, message));
-    peer.socket.on('close', () => handleDisconnect(peer));
-
-    sendPeerJoinedMessage(peer);
-
-    // Send a message to the joined peer with all available peers
-    sendMessage(peer, new Message(
-        MessageType.AVAILABLE_PEERS,
-        getAvailablePeers(peer).map(otherPeer => otherPeer.serialize())
-    ));
-
-    // Send a message to the joined peer with it's personal name
-    sendMessage(peer, new Message(
-        MessageType.PERSONAL_NAME,
-        peer.name
-    ));
-}
-
-/**
- * 
- * @param {JSON} message 
- */
-function handleMessage(peer, message) {
-    message = JSON.parse(message);
-
-    switch(message.type) {
-        case MessageType.CALL:
-            handleCall(peer, message);
-            break;
-        case MessageType.ANSWER:
-            handleAnswer(peer, message);
-            break;
-        case MessageType.GATHERED_ICE_CANDIDATE:
-            handleGatheredIceCandidate(peer, message);
-            break;
-        case MessageType.CLIENT_DISCONNECTED:
-            handleDisconnect(peer);
-            break;
-    }
-}
-
-/**
- * 
- * @param {Peer} caller 
- * @param {*} message 
- */
-function handleCall(caller, message) {
-    const { receivingPeerId, offer } = message.message;
-    const receivingPeer = groupManager.getGroupByIp(caller.ip)[receivingPeerId];
-    
-    sendMessage(receivingPeer, new Message(MessageType.CALL, { callerPeerId: caller.id, offer }))
-}
-
-/**
- * 
- * @param {Peer} peer 
- * @param {*} message 
- */
-function handleAnswer(peer, message) {
-    const { callerPeerId, answer} = message.message;
-    const callingPeer = groupManager.getGroupByIp(peer.ip)[callerPeerId];
-    
-    sendMessage(callingPeer, new Message(MessageType.ANSWERED, { answer }));
-}
-
-/**
- * 
- * @param {Peer} fromPeer 
- * @param {*} message 
- */
-function handleGatheredIceCandidate(fromPeer, message) {
-    const { receivingPeerId, candidate } = message.message;
-
-    const receivingPeer = groupManager.getGroupByIp(fromPeer.ip)[receivingPeerId];
-
-    sendMessage(receivingPeer, new Message(MessageType.RECEIVED_ICE_CANDIDATE, { candidate }));
-}
-
-/**
- * 
- * @param {Peer} peer 
- */
-function handleDisconnect(peer) {
-    groupManager.leaveGroup(peer);
-
-    sendPeerLeftMessage(peer);
-}
-
-/**
- * 
- * @param {Peer} peer 
- * @param {Message} message 
- */
-function sendMessage(peer, message) {
-    peer.socket.send(message.toJSON());
-}
-
-/**
- * 
- * @param {Peer} peer 
- * @return {Peer[]}
- */
-function getAvailablePeers(peer) {
-    let availablePeers = [];
-    
-    // Get all other peers in the group with the same IP address
-    const group = groupManager.getGroupByIp(peer.ip);
-    for (const peerId in group) {
-        const otherPeer = group[peerId];
-
-        if (peerId != peer.id) availablePeers.push(otherPeer)
-    }
-
-    return availablePeers;
-}
-
-/**
- * 
- * @param {Peer} peer 
- */
-function sendPeerJoinedMessage(peer) {
-    const otherPeers = getAvailablePeers(peer);
-
-    for (const otherPeer of otherPeers) {
-        sendMessage(otherPeer, new Message(MessageType.PEER_JOINED, peer.serialize()))
-    }
-}
-
-/**
- * 
- * @param {Peer} peer 
- */
-function sendPeerLeftMessage(peer) {
-    const otherPeers = getAvailablePeers(peer);
-
-    for (const otherPeer of otherPeers) {
-        sendMessage(otherPeer, new Message(MessageType.PEER_LEFT, peer.serialize()))
-    }
-}
-
-console.log(`Server is running on port: ${PORT}`);
+new SignalingServer(PORT);

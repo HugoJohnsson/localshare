@@ -3,15 +3,15 @@
     the websocket connections.
 */
 class Message {
-    constructor(type, message = null) {
+    constructor(type, data) {
         this.type = type;
-        this.message = message;
+        this.data = data;
     }
 
     toJSON() {
         return JSON.stringify({
             type: this.type,
-            message: this.message
+            data: this.data,
         });
     }
 }

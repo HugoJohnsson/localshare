@@ -5,8 +5,6 @@ export default {
     PEER_LEFT: 'peer-left',
     CALL: 'call',
     ANSWER: 'answer',
-    ANSWERED: 'answered',
-    GATHERED_ICE_CANDIDATE: 'gathered-ice-candidate',
-    RECEIVED_ICE_CANDIDATE: 'received-ice-candidate',
+    NEW_ICE_CANDIDATE: 'new-ice-candidate',
     CLIENT_DISCONNECTED: 'client-disconnected'
 }

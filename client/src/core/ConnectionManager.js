@@ -11,7 +11,7 @@ class ConnectionManager {
         Events.listen(EventType.CALL, (e) => this.onCallPeer(e)); // Listen for when the user wants to send files to a peer
         Events.listen(EventType.RECEIVED_CALL, (e) => this.onReceivedCall(e));
         Events.listen(EventType.ANSWERED, (e) => this.onAnswered(e));
-        Events.listen(EventType.RECEIVED_ICE_CANDIDATE, (e) => this.onReceivedIceCandidate(e));
+        Events.listen(EventType.NEW_ICE_CANDIDATE, (e) => this.onReceivedIceCandidate(e));
     }
 
     /**
@@ -23,7 +23,7 @@ class ConnectionManager {
      */
     onCallPeer = async (e) => {
         this.peerConnection = new RTCPeerConnection({
-            sdpSemantics: 'unified-plan', //newer implementation of WebRTC
+            sdpSemantics: 'unified-plan',
             iceServers: [{urls: 'stun:stun.l.google.com:19302'}],
             iceCandidatePoolSize: 10
         });
@@ -41,7 +41,7 @@ class ConnectionManager {
             }
         });
 
-        this.wsConnection.send(new Message(MessageType.CALL, { receivingPeerId: e.detail.receivingPeerId, offer }));
+        this.wsConnection.send(new Message(MessageType.CALL, { offer }, e.detail.receivingPeerId));
     }
 
     /**
@@ -50,21 +50,19 @@ class ConnectionManager {
      * @param {CustomEvent} e 
      */
     onReceivedCall = async (e) => {
-        const { callerPeerId, offer } = e.detail;
-
         this.peerConnection = new RTCPeerConnection({
-            sdpSemantics: 'unified-plan', //newer implementation of WebRTC
+            sdpSemantics: 'unified-plan',
             iceServers: [{urls: 'stun:stun.l.google.com:19302'}],
             iceCandidatePoolSize: 10
         });
 
-        await this.peerConnection.setRemoteDescription(offer);
+        await this.peerConnection.setRemoteDescription(e.detail.offer);
 
         const answer = await this.peerConnection.createAnswer();
 
         await this.peerConnection.setLocalDescription(answer);
 
-        this.wsConnection.send(new Message(MessageType.ANSWER, { callerPeerId, answer }));
+        this.wsConnection.send(new Message(MessageType.ANSWER, { answer }, e.detail.callerPeerId));
     }
 
     /**
@@ -84,7 +82,7 @@ class ConnectionManager {
      */
     onGatheredIceCandidate = (receivingPeerId, e) => {
         if (e.candidate) {
-            this.wsConnection.send(new Message(MessageType.GATHERED_ICE_CANDIDATE, { receivingPeerId, candidate: e.candidate }));
+            this.wsConnection.send(new Message(MessageType.NEW_ICE_CANDIDATE, { candidate: e.candidate }, receivingPeerId));
         }
     }
 

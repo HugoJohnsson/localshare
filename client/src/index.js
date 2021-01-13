@@ -22,85 +22,87 @@ class App {
 
         switch(message.type) {
             case MessageType.AVAILABLE_PEERS:
-                this.handleAvailablePeersMessage(message.message);
+                this.handleAvailablePeersMessage(message);
                 break;
             case MessageType.PERSONAL_NAME:
-                this.handlePersonalNameMessage(message.message);
+                this.handlePersonalNameMessage(message);
                 break;
             case MessageType.PEER_JOINED:
-                this.handlePeerJoinedMessage(message.message);
+                this.handlePeerJoinedMessage(message);
                 break;
             case MessageType.PEER_LEFT:
-                this.handlePeerLeftMessage(message.message);
+                this.handlePeerLeftMessage(message);
                 break;
             case MessageType.CALL:
-                this.handleCallMessage(message.message);
+                this.handleCallMessage(message);
                 break;
-            case MessageType.RECEIVED_ICE_CANDIDATE:
-                this.handleReceivedIceCandidate(message.message);
+            case MessageType.NEW_ICE_CANDIDATE:
+                this.handleReceivedIceCandidate(message);
                 break;
-            case MessageType.ANSWERED:
-                this.handleAnsweredMessage(message.message);
+            case MessageType.ANSWER:
+                this.handleAnsweredMessage(message);
                 break;
         }
     }
 
     /**
      * 
-     * @param {*} peer 
+     * @param {*} message 
      */
-    handlePeerJoinedMessage = (peer) => {
-        this.UI.newPeer(peer);
+    handlePeerJoinedMessage = (message) => {
+        this.UI.newPeer(message.data);
     }
     
     /**
      * 
-     * @param {*} peer 
+     * @param {*} message 
      */
-    handlePeerLeftMessage = (peer) => {
-        this.UI.removePeer(peer);
+    handlePeerLeftMessage = (message) => {
+        this.UI.removePeer(message.data);
     }
 
     /**
      * Handler for when another peer want to connect.
      * Will setup an RTCPeerConnection.
      * 
-     * @param {*} data 
+     * @param {*} message 
      */
-    handleCallMessage = (data) => {
-        const { callerPeerId, offer } = data;
-
-        Events.trigger(EventType.RECEIVED_CALL, { callerPeerId, offer });
+    handleCallMessage = (message) => {
+        Events.trigger(EventType.RECEIVED_CALL, { callerPeerId: message.sendingPeerId, offer: message.data.offer });
     }
 
     /**
      * Handler for when you have called another peer
      * and they have answered.
      * 
-     * @param {*} data 
+     * @param {*} message 
      */
-    handleAnsweredMessage = (data) => {
-        Events.trigger(EventType.ANSWERED, { answer: data.answer });
+    handleAnsweredMessage = (message) => {
+        Events.trigger(EventType.ANSWERED, { answer: message.data.answer });
     }
 
-    handleReceivedIceCandidate = (data) => {
-        Events.trigger(EventType.RECEIVED_ICE_CANDIDATE, { candidate: data.candidate });
+    /**
+     * 
+     * @param {*} message 
+     */
+    handleReceivedIceCandidate = (message) => {
+        Events.trigger(EventType.NEW_ICE_CANDIDATE, { candidate: message.data.candidate });
     }
     
     /**
      * 
-     * @param {*} name 
+     * @param {*} message 
      */
-    handlePersonalNameMessage = (name) => {
-        this.UI.setPersonalName(name);
+    handlePersonalNameMessage = (message) => {
+        this.UI.setPersonalName(message.data.name);
     }
     
     /**
      * 
-     * @param {*} availablePeers 
+     * @param {*} message 
      */
-    handleAvailablePeersMessage = (availablePeers) => {
-        for (const peer of availablePeers) {
+    handleAvailablePeersMessage = (message) => {
+        for (const peer of message.data.availablePeers) {
             this.UI.newPeer(peer);
         }
     }

@@ -3,15 +3,17 @@
     the websocket connections.
 */
 export default class Message {
-    constructor(type, message) {
+    constructor(type, data, toPeerId) {
         this.type = type;
-        this.message = message;
+        this.data = data;
+        this.toPeerId = toPeerId;
     }
 
     toJSON() {
         return JSON.stringify({
             type: this.type,
-            message: this.message
+            data: this.data,
+            toPeerId: this.toPeerId
         });
     }
 }
