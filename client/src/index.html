@@ -8,13 +8,16 @@
 </head>
 <body>
     <div id="app">
-        <div class="main">
-            <div class="available-peers">
-                <h3 class="available-peers__heading">Click on a device to send files</h3>
-                <p id="personal-name" class="available-peers__personal-name"></p>
+        <div id="files" class="files hide">
+            <h2 class="files__title">Choose files or drag them here</h2>
+            <input id="file-input" class="files__choose_files" type="file" multiple></input>
+        </div>
 
-                <div id="available-peers" class="available-peers__peers"></div>
-            </div>
+        <div class="available-peers">
+            <h3 class="available-peers__heading">Click on a device to send files</h3>
+            <p id="personal-name" class="available-peers__personal-name"></p>
+
+            <div id="available-peers" class="available-peers__peers"></div>
         </div>
     </div>
 

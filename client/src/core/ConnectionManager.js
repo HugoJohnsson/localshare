@@ -9,10 +9,13 @@ class ConnectionManager {
         this.peerConnection = null;
         this.dataChannel = null;
 
-        Events.listen(EventType.CALL, (e) => this.onCallPeer(e)); // Listen for when the user wants to send files to a peer
-        Events.listen(EventType.RECEIVED_CALL, (e) => this.onReceivedCall(e));
-        Events.listen(EventType.ANSWERED, (e) => this.onAnswered(e));
-        Events.listen(EventType.NEW_ICE_CANDIDATE, (e) => this.onReceivedIceCandidate(e));
+        Events.listen(EventType.CALL, this.onCallPeer); // Listen for when the user wants to send files to a peer
+        Events.listen(EventType.RECEIVED_CALL, this.onReceivedCall);
+        Events.listen(EventType.ANSWERED, this.onAnswered);
+        Events.listen(EventType.NEW_ICE_CANDIDATE, this.onReceivedIceCandidate);
+
+        // File transfer
+        Events.listen(EventType.NEW_BYTE, this.onNewByte);
     }
 
     /**
@@ -41,7 +44,7 @@ class ConnectionManager {
             this.peerConnection.onicecandidate = (iceGatherEvent) => this.onGatheredIceCandidate(e.detail.receivingPeerId, iceGatherEvent);
             this.peerConnection.addEventListener('connectionstatechange', () => {
                 if (this.peerConnection.connectionState === 'connected') {
-                    console.log("peers connected!");
+                    Events.trigger(EventType.PEERS_CONNECTED, {});
                 }
             });
     
@@ -107,6 +110,16 @@ class ConnectionManager {
      */
     onReceivedIceCandidate = (e) => {
         this.peerConnection.addIceCandidate(e.detail.candidate);
+    }
+
+    /**
+     * 
+     * @param {CustomEvent} e 
+     */
+    onNewByte = (e) => {
+        if (this.peerConnection && this.dataChannel) {
+            this.dataChannel.send(e.detail.byte);
+        }
     }
     
 }

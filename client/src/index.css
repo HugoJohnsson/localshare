@@ -10,12 +10,28 @@ body {
     color: #333;
 }
 
+.hide {
+    display: none;
+}
+
 #app {
     height: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
+    position: relative;
 }
+
+
+.files {
+    position: absolute;
+    background-color: #fff;
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    border-radius: 15px;
+    width: 450px;
+    height: 450px;
+}
+
 
 .available-peers__heading {
     text-align: center;
