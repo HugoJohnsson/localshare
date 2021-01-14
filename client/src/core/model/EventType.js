@@ -8,5 +8,6 @@ export default {
     PEER_LEFT: 'peer-left',
     RECEIVED_PERSONAL_NAME: 'received-personal-name',
     RECEIVED_AVAILABLE_PEERS: 'received-available-peers',
-    NEW_BYTE: 'new-byte'
+    FILE_UPLOAD: 'file-upload',
+    FILE_RECEIVED: 'files-received'
 }

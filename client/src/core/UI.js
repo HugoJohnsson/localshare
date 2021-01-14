@@ -1,4 +1,5 @@
 import makeAvailablePeerElement from '../components/availablePeer';
+import makeReceivedFileElement from '../components/receivedFile';
 import Events from './Events';
 import EventType from './model/EventType';
 
@@ -8,13 +9,15 @@ export default class UI {
         this.filesEl = document.getElementById('files');
         this.fileInputEl = document.getElementById('file-input');
         this.fileInputEl.addEventListener('change', this.handleFileUpload);
-
+        this.receivedFilesEl = document.getElementById('received_files');
+        this.receivedFilesList = document.getElementById('received_files_list');
 
         Events.listen(EventType.PEER_JOINED, this.onPeerJoined);
         Events.listen(EventType.PEER_LEFT, this.onPeerLeft);
         Events.listen(EventType.RECEIVED_AVAILABLE_PEERS, this.onReceivedAvailablePeers);
         Events.listen(EventType.RECEIVED_PERSONAL_NAME, this.onReceivedPersonalName);
         Events.listen(EventType.PEERS_CONNECTED, this.onPeersConnected);
+        Events.listen(EventType.FILE_RECEIVED, this.onFileReceived);
     }
 
     /**
@@ -22,32 +25,22 @@ export default class UI {
      * @param {Event} e 
      */
     handleFileUpload = (e) => {
-        const files = e.target.files;
-        const file = files[0];
+        Events.trigger(EventType.FILE_UPLOAD, { files: e.target.files });
 
-        // Check if the file is an image
-        if (file.type && file.type.indexOf('image') === -1) {
-            return;
-        }
+        // Display files uploaded in the upload modal
+    }
 
-        const reader = new FileReader();
-        reader.addEventListener('load', (event) => {
-            const arrayBuffer = event.target.result;
-            var byteArray = new Uint8Array(arrayBuffer);
-            
-            for (let i = 0; i <= byteArray.length; i++) {
-                Events.trigger(EventType.NEW_BYTE, { byte: byteArray[i] });
-            }
-            
-        });
-        reader.addEventListener('progress', (event) => {
-            if (event.loaded && event.total) {
-                const percent = (event.loaded / event.total) * 100;
-                console.log(`Progress: ${Math.round(percent)}`);
-            }
-        });
+    /**
+     * file = ArrayBuffer
+     * 
+     * @param {CustomEvent} e 
+     */
+    onFileReceived = (e) => {
+        this.toggleReceivedFilesModal();
 
-        reader.readAsArrayBuffer(file);
+        const file = e.detail.file;
+
+        this.receivedFilesList.append(makeReceivedFileElement(this.arrayBufferToDataUrl(file, 'image/png')));
     }
 
     /**
@@ -110,5 +103,26 @@ export default class UI {
 
     toggleFileModal = () => {
         this.filesEl.classList.toggle('hide');
+    }
+
+    toggleReceivedFilesModal = () => {
+        this.receivedFilesEl.classList.toggle('hide');
+    }
+
+    /**
+     * 
+     * @param {ArrayBuffer} arrayBuffer 
+     * @param {String} mime 
+     */
+    arrayBufferToDataUrl = (arrayBuffer, mime) => {
+        const bytes = new Uint8Array(arrayBuffer); // convert the ArrayBuffer to plain array of bytes
+                
+        const STRING_CHAR = bytes.reduce((data, byte) => {
+            return data + String.fromCharCode(byte);
+        }, '');
+
+        let base64String = btoa(STRING_CHAR);
+
+        return `data:${mime};base64, ${base64String}`;
     }
 }

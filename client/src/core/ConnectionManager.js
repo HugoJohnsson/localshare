@@ -15,7 +15,43 @@ class ConnectionManager {
         Events.listen(EventType.NEW_ICE_CANDIDATE, this.onReceivedIceCandidate);
 
         // File transfer
-        Events.listen(EventType.NEW_BYTE, this.onNewByte);
+        Events.listen(EventType.FILE_UPLOAD, this.onFileUpload);
+    }
+
+    /**
+     * Converts the first file to an ArrayBuffer
+     * and sends it over the data channel.
+     * 
+     * TODO: split the file into chunks because right now
+     * you can only send small files (web rtc data size limit)
+     * 
+     * @param {CustomEvent} e 
+     */
+    onFileUpload = (e) => {
+        if (this.peerConnection && this.dataChannel) {
+            const file = e.detail.files[0];
+
+            //Check if the file is an image
+            if (file.type && file.type.indexOf('image') === -1) {
+                return;
+            }
+
+            // Convert the file to an ArrayBuffer and send it over the data channel
+            const reader = new FileReader();
+            reader.addEventListener('load', (event) => this.dataChannel.send(event.target.result));
+            reader.readAsArrayBuffer(file)
+        }
+    }
+
+    /**
+     * Handler for messages sent over the RTCPeerConnection
+     * 
+     * @param {*} message 
+     */
+    handleMessage = (message) => {
+        if (typeof message !== 'string') {
+            Events.trigger(EventType.FILE_RECEIVED, { file: message });
+        }
     }
 
     /**
@@ -34,8 +70,6 @@ class ConnectionManager {
             });
     
             this.dataChannel = this.peerConnection.createDataChannel("sendChannel");
-    
-            this.dataChannel.onopen = () => this.dataChannel.send("hello world");
     
             const offer = await this.peerConnection.createOffer({offerToReceiveVideo: true});
     
@@ -69,7 +103,7 @@ class ConnectionManager {
                 this.dataChannel = dataChannelEvent.channel;
     
                 this.dataChannel.addEventListener('message', (messageEvent) => {
-                    console.log(messageEvent.data);
+                    this.handleMessage(messageEvent.data);
                 })
             });
     
@@ -111,17 +145,6 @@ class ConnectionManager {
     onReceivedIceCandidate = (e) => {
         this.peerConnection.addIceCandidate(e.detail.candidate);
     }
-
-    /**
-     * 
-     * @param {CustomEvent} e 
-     */
-    onNewByte = (e) => {
-        if (this.peerConnection && this.dataChannel) {
-            this.dataChannel.send(e.detail.byte);
-        }
-    }
-    
 }
 
 export default ConnectionManager;

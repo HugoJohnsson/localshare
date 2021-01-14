@@ -30,6 +30,40 @@ body {
     border-radius: 15px;
     width: 450px;
     height: 450px;
+    text-align: center;
+}
+
+.files__title {
+    font-weight: 300;
+    margin: 2rem 0 1rem 0;
+}
+
+
+.received_files {
+    position: absolute;
+    background-color: #fff;
+    box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+    border-radius: 15px;
+    width: 450px;
+    height: 450px;
+    text-align: center;
+}
+
+.received_files__title {
+    font-weight: 300;
+    margin: 2rem 0 1rem 0;
+}
+
+.received_files__files {
+    display: flex;
+    padding: 1rem;
+}
+
+.received_files__file {
+    width: 100px;
+    height: 100px;
+    background-size: contain;
+    cursor: pointer;
 }
 
 
