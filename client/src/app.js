@@ -8,8 +8,8 @@ import ConnectionManager from './core/ConnectionManager';
 export default class App {
     constructor() {
         this.wsConnection = new WebSocketConnection(this.messageHandler);
-        this.UI = new UI();
-        this.connectionManager = new ConnectionManager(this.wsConnection);
+        new UI();
+        new ConnectionManager(this.wsConnection);
     }
 
     /**

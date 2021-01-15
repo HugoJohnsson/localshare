@@ -32,7 +32,7 @@ body {
     width: 450px;
     height: 450px;
     text-align: center;
-    overflow: scroll;
+    overflow-y: auto;
     
 }
 
@@ -99,7 +99,7 @@ body {
     width: 450px;
     height: 450px;
     text-align: center;
-    overflow: scroll;
+    overflow-y: auto;
 }
 
 .received_files__title {
