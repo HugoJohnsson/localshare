@@ -32,6 +32,8 @@ body {
     width: 450px;
     height: 450px;
     text-align: center;
+    overflow: scroll;
+    
 }
 
 .files__title {
@@ -47,19 +49,21 @@ body {
 
 .files__processing_files {
     display: flex;
+    flex-wrap: wrap;
     padding: 1rem;
 }
 
 .files__processing_file {
     width: 100px;
-    height: 100px;
+    height: 100%;
     background-size: contain;
     cursor: pointer;
+    margin: 1rem;
 }
 
 .files__processing_file_image {
     width: 100%;
-    height: 75%;
+    height: 50%;
     object-fit: contain;
 }
 
@@ -95,6 +99,7 @@ body {
     width: 450px;
     height: 450px;
     text-align: center;
+    overflow: scroll;
 }
 
 .received_files__title {
@@ -105,19 +110,21 @@ body {
 
 .received_files__files {
     display: flex;
+    flex-wrap: wrap;
     padding: 1rem;
 }
 
 .received_files__file {
     width: 100px;
-    height: 100px;
+    height: 100%;
     background-size: contain;
     cursor: pointer;
+    margin: 1rem;
 }
 
 .received_files__image {
     width: 100%;
-    height: 75%;
+    height: 50%;
     object-fit: contain;
 }
 

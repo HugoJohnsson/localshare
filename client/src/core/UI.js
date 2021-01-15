@@ -50,7 +50,7 @@ export default class UI {
      * @param {CustomEvent} e 
      */
     onFileReceived = async (e) => {
-        this.toggleReceivedFilesModal();
+        this.showReceivedFilesModal();
 
         const blob = new Blob(e.detail.chunks, { type: e.detail.header.mime });
 
@@ -143,7 +143,7 @@ export default class UI {
         this.filesEl.classList.toggle('hide');
     }
 
-    toggleReceivedFilesModal = () => {
-        this.receivedFilesEl.classList.toggle('hide');
+    showReceivedFilesModal = () => {
+        this.receivedFilesEl.classList.remove('hide');
     }
 }
