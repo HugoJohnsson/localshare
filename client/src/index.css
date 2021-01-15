@@ -8,6 +8,7 @@ body {
     font-family: Arial, Helvetica, sans-serif;
     height: 100vh;
     color: #333;
+    background-color: #f8f8f8;
 }
 
 .hide {
@@ -36,6 +37,53 @@ body {
 .files__title {
     font-weight: 300;
     margin: 2rem 0 1rem 0;
+    font-size: 1.3rem;
+}
+
+.files__choose_files {
+    margin-top: 1rem;
+    font-size: 2rem;
+}
+
+.files__processing_files {
+    display: flex;
+    padding: 1rem;
+}
+
+.files__processing_file {
+    width: 100px;
+    height: 100px;
+    background-size: contain;
+    cursor: pointer;
+}
+
+.files__processing_file_image {
+    width: 100%;
+    height: 75%;
+    object-fit: contain;
+}
+
+.files__processing_file_info {
+    text-align: center;
+    margin-top: 0.3rem;
+}
+
+.files__processing_file_name {
+    font-size: 0.8rem;
+    word-wrap: break-word;
+}
+
+.files__processing_file_size {
+    font-size: 0.7rem;
+    margin-top: 0.2rem;
+    font-style: italic;
+}
+
+.files__processing_file_status {
+    font-size: 0.7rem;
+    margin-top: 0.2rem;
+    font-style: italic;
+    color: #4285f4;
 }
 
 
@@ -52,6 +100,7 @@ body {
 .received_files__title {
     font-weight: 300;
     margin: 2rem 0 1rem 0;
+    font-size: 1.3rem;
 }
 
 .received_files__files {
@@ -66,6 +115,27 @@ body {
     cursor: pointer;
 }
 
+.received_files__image {
+    width: 100%;
+    height: 75%;
+    object-fit: contain;
+}
+
+.received_files__info {
+    text-align: center;
+    margin-top: 0.3rem;
+}
+
+.received_files__name {
+    font-size: 0.8rem;
+    word-wrap: break-word;
+}
+
+.received_files__size {
+    font-size: 0.7rem;
+    margin-top: 0.2rem;
+    font-style: italic;
+}
 
 .available-peers__heading {
     text-align: center;

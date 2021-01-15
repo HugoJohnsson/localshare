@@ -8,6 +8,9 @@ class ConnectionManager {
         this.wsConnection = wsConnection;
         this.peerConnection = null;
         this.dataChannel = null;
+        this.currentFileHeader = null;
+        this.receivedBytes = 0; // Holds the received bytes, this way we can now if we have received the whole file or not
+        this.buffer = [];
 
         Events.listen(EventType.CALL, this.onCallPeer); // Listen for when the user wants to send files to a peer
         Events.listen(EventType.RECEIVED_CALL, this.onReceivedCall);
@@ -16,6 +19,7 @@ class ConnectionManager {
 
         // File transfer
         Events.listen(EventType.FILE_UPLOAD, this.onFileUpload);
+        Events.listen(EventType.FILE_RECEIVED, this.onFileReceived);
     }
 
     /**
@@ -31,6 +35,11 @@ class ConnectionManager {
         if (this.peerConnection && this.dataChannel) {
             const file = e.detail.files[0];
 
+            Events.trigger(EventType.START_FILE_UPLOAD, { file: file });
+
+            // Send initial message to the other peer informing them we are sending them a file
+            this.dataChannel.send(JSON.stringify({ type: 'header', data: { name: file.name, size: file.size, mime: file.type } }));
+            
             //Check if the file is an image
             if (file.type && file.type.indexOf('image') === -1) {
                 return;
@@ -44,14 +53,53 @@ class ConnectionManager {
     }
 
     /**
+     * 
+     * @param {CustomEvent} e 
+     */
+    onFileReceived = (e) => {
+        this.dataChannel.send(JSON.stringify({ type: 'file-received', data: { fileName: e.detail.header.name } }));
+    }
+
+    /**
      * Handler for messages sent over the RTCPeerConnection
      * 
      * @param {*} message 
      */
     handleMessage = (message) => {
         if (typeof message !== 'string') {
-            Events.trigger(EventType.FILE_RECEIVED, { file: message });
+            this.receivedBytes += message.byteLength;
+
+            this.buffer.push(message);
+            
+            if (this.receivedBytes >= this.currentFileHeader.size) { // We have received all chunks
+                Events.trigger(EventType.FILE_RECEIVED, { chunks: this.buffer, header: this.currentFileHeader });
+
+                this.currentFileHeader = null;
+                this.buffer = [];
+                this.receivedBytes = 0;
+            }
+
+            return;
         }
+
+        message = JSON.parse(message);
+
+        switch(message.type) {
+            case 'header':
+                this.handleFileHeader(message.data);
+                break;
+            case 'file-received':
+                this.handleFileReceived(message.data);
+                break;
+        }
+    }
+
+    handleFileHeader = (data) => {
+        this.currentFileHeader = data;
+    }
+
+    handleFileReceived = (data) => {
+        Events.trigger(EventType.FILE_RECEIVED_DATA, data);
     }
 
     /**
@@ -70,6 +118,10 @@ class ConnectionManager {
             });
     
             this.dataChannel = this.peerConnection.createDataChannel("sendChannel");
+
+            this.dataChannel.addEventListener('message', (messageEvent) => {
+                this.handleMessage(messageEvent.data);
+            });
     
             const offer = await this.peerConnection.createOffer({offerToReceiveVideo: true});
     

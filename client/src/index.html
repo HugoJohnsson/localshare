@@ -10,11 +10,16 @@
     <div id="app">
         <div id="files" class="files hide">
             <h2 class="files__title">Choose files or drag them here</h2>
-            <input id="file-input" class="files__choose_files" type="file" multiple></input>
+            <hr>
+            <input id="file-input" type="file" id="file-input" style="display: none;" multiple />
+            <input class="files__choose_files" type="button" value="Browse files" onclick="document.getElementById('file-input').click();" />
+
+            <div id="processing_files" class="files__processing_files"></div>
         </div>
 
         <div id="received_files" class="received_files hide">
             <h2 class="received_files__title">Hey! You have received some files.</h2>
+            <hr>
 
             <div id="received_files_list" class="received_files__files"></div>
         </div>
