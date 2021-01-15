@@ -3,12 +3,25 @@ import EventType from './model/EventType';
 import Message from './Message';
 import MessageType from './model/MessageType';
 
+/**
+ * The ConnectionManager handles all logic related
+ * to WebRTC communication.
+ * 
+ * TODO: 
+ * 
+ * - Need to provide abstraction over
+ *   "caller" logic and "receiver" logic, right now
+ *   everything is in here.
+ *
+ * - Abstraction over file and file-chunking
+ *   logic.
+ */
 class ConnectionManager {
     constructor(wsConnection) {
         this.wsConnection = wsConnection;
-        this.peerConnection = null;
-        this.dataChannel = null;
-        this.currentFileHeader = null;
+        this.peerConnection;
+        this.dataChannel;
+        this.currentFileHeader;
         this.receivedBytes = 0; // Holds the received bytes, this way we can now if we have received the whole file or not
         this.buffer = [];
 

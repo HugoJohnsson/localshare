@@ -1,8 +1,8 @@
 const WebSocket = require('ws');
-const GroupManager = require('./core/GroupManager.js');
-const Peer = require('./core/Peer.js');
-const Message = require('./core/Message.js');
-const MessageType = require('./core/model/MessageType.js');
+const GroupManager = require('./core/GroupManager');
+const Peer = require('./core/Peer');
+const Message = require('./core/Message');
+const MessageType = require('./core/model/MessageType');
 
 class SignalingServer {
 

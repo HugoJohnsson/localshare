@@ -1,6 +1,6 @@
 /*
     Represents a message that will be sent over
-    the websocket connections.
+    the websocket connection (signaling server).
 */
 export default class Message {
     constructor(type, data, toPeerId) {

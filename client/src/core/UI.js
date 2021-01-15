@@ -1,9 +1,16 @@
-import makeAvailablePeerElement from '../components/availablePeer';
-import makeProcessingFileElement from '../components/processingFile';
-import makeReceivedFileElement from '../components/receivedFile';
+import makeAvailablePeerElement from './components/availablePeer';
+import makeProcessingFileElement from './components/processingFile';
+import makeReceivedFileElement from './components/receivedFile';
 import Events from './Events';
 import EventType from './model/EventType';
 
+/**
+ * Handles all logic related to the UI.
+ * 
+ * TODO:
+ *  - Seperate the different component UI logic
+ *    from eachother.  
+ */
 export default class UI {
     constructor() {
         this.availablePeersEl = document.getElementById('available-peers');

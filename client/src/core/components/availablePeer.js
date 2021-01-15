@@ -1,6 +1,6 @@
-import randomColor from '../core/randomColor';
-import Events from '../core/Events';
-import EventType from '../core/model/EventType';
+import randomColor from '../helpers/randomColor';
+import Events from '../Events';
+import EventType from '../model/EventType';
 
 export default function makeAvailablePeerElement(peerId, name) {
     let el = document.createElement('div');

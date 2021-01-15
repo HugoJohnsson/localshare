@@ -1,8 +1,12 @@
-import Message from '../../../server/core/Message';
+import Message from './Message';
 import MessageType from './model/MessageType';
 
 const getSignalingServerUrl = () => 'ws://' + location.hostname + ':8080';
 
+/**
+ * Handles all communication with the
+ * signaling server.
+ */
 class WebSocketConnection {
 
     /**
